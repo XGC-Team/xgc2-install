@@ -196,6 +196,8 @@ drain_tty() {
 hide_cursor() { is_tty && ui '\033[?25l'; }
 show_cursor() { is_tty && ui '\033[?25h'; }
 clear_screen() { is_tty && ui '\033[2J\033[H'; }
+save_cursor() { is_tty && ui '\033[s'; }
+redraw_from_cursor() { is_tty && ui '\033[u\033[J'; }
 
 restore_terminal() {
   show_cursor
@@ -544,12 +546,14 @@ select_action() {
   fi
   trap restore_terminal EXIT
   hide_cursor
+  clear_screen
+  draw_brand
+  draw_facts
+  save_cursor
   while true; do
-    clear_screen
     ACTION=install
     [[ "$idx" == 1 ]] && ACTION=uninstall
-    draw_brand
-    draw_facts
+    redraw_from_cursor
     draw_action_menu "$idx"
     case "$(read_key)" in
       up) idx=0 ;;
@@ -577,10 +581,12 @@ select_role() {
   fi
   trap restore_terminal EXIT
   hide_cursor
+  clear_screen
+  draw_brand
+  draw_facts
+  save_cursor
   while true; do
-    clear_screen
-    draw_brand
-    draw_facts
+    redraw_from_cursor
     draw_menu "$idx"
     case "$(read_key)" in
       up)
