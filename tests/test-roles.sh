@@ -36,4 +36,10 @@ fi
 line="$("$script" --source-url http://127.0.0.1 --print-source)"
 [[ "$line" == deb\ *http://127.0.0.1* ]]
 
+# curl | bash has no BASH_SOURCE file path.
+piped_list="$(bash -s -- --list < "$script")"
+printf '%s\n' "$piped_list" | grep -qx $'gcs\tGCS\txgc2-core'
+piped_src="$(bash -s -- --source-url http://127.0.0.1 --print-source < "$script")"
+[[ "$piped_src" == deb\ *http://127.0.0.1* ]]
+
 echo "test-roles ok"
