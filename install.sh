@@ -12,10 +12,12 @@ PROFILE_DIR="${SCRIPT_DIR}/profiles"
 usage() {
   cat <<EOF
 Usage:
+  $0
   $0 --role gcs|robot --yes
   $0 --uninstall --role gcs|robot --yes
   $0 --source-only --yes
 
+  (no args)          interactive HUD on a real terminal
   --role NAME        gcs (core) or robot (agent)
   --source-url URL   override APT base
   --uninstall        purge the role package
@@ -26,7 +28,8 @@ Usage:
 EOF
 }
 
-is_tty() { [[ -t 0 && -t 1 && -r /dev/tty && -w /dev/tty ]]; }
+# stdin may be the script itself (curl | sudo bash). The HUD uses /dev/tty.
+is_tty() { [[ -t 1 && -r /dev/tty && -w /dev/tty ]]; }
 
 normalize_role() {
   case "$1" in
