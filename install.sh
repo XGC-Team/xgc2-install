@@ -745,6 +745,11 @@ else
     exit 1
   }
   SELECTED="$ROLE_IDX"
+  if is_tty; then
+    clear_screen
+    show_cursor
+    printf 'Installing %s\n\n' "${PROFILE_LABELS[$SELECTED]}"
+  fi
 fi
 
 if [[ "$ACTION" != uninstall ]]; then
