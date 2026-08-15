@@ -138,14 +138,17 @@ host_pretty() {
 }
 
 require_apt_url() {
-  if [[ -z "$APT_BASE_URL" || "$APT_BASE_URL" == "__XGC2_APT_BASE_URL__" ]]; then
-    echo "APT base is not configured" >&2
-    return 2
-  fi
+  case "$APT_BASE_URL" in
+    http://*|https://*) ;;
+    *)
+      echo "APT base is not configured" >&2
+      return 2
+      ;;
+  esac
 }
 
 require_apt_key() {
-  if [[ -z "$EXPECTED_FPR" || "$EXPECTED_FPR" == "__XGC2_APT_KEY_FINGERPRINT__" ]]; then
+  if [[ ! "$EXPECTED_FPR" =~ ^[0-9A-Fa-f]{16,}$ ]]; then
     echo "APT key fingerprint is not configured" >&2
     return 2
   fi
