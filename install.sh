@@ -258,17 +258,18 @@ draw_facts() {
 
 draw_menu() {
   local selected="$1"
-  local i marker label
+  local i marker label padded
   frame_row "$(pad_inner "")"
   frame_row "$(pad_inner "  ${C_AMBER}${C_BOLD}SELECT ROLE${C_RESET}")"
   frame_row "$(pad_inner "")"
   for i in "${!PROFILE_IDS[@]}"; do
     label="${PROFILE_LABELS[$i]}"
+    printf -v padded '%-5s' "$label"
     if [[ "$i" == "$selected" ]]; then
       marker="${C_CYAN}▶${C_RESET}"
-      frame_row "$(pad_inner "    ${marker} ${C_BOLD}${C_CYAN}${label}${C_RESET}    ${PROFILE_DETAILS[$i]}")"
+      frame_row "$(pad_inner "    ${marker} ${C_BOLD}${C_CYAN}${padded}${C_RESET}  ${PROFILE_DETAILS[$i]}")"
     else
-      frame_row "$(pad_inner "      ${C_DIM}${label}${C_RESET}    ${C_DIM}${PROFILE_DETAILS[$i]}${C_RESET}")"
+      frame_row "$(pad_inner "      ${C_DIM}${padded}${C_RESET}  ${C_DIM}${PROFILE_DETAILS[$i]}${C_RESET}")"
     fi
   done
   frame_row "$(pad_inner "")"
