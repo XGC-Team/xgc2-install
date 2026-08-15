@@ -240,17 +240,26 @@ draw_brand() {
   fi
 }
 
+apt_dashboard_url() {
+  local base="${APT_BASE_URL%/}"
+  case "$base" in
+    http://*|https://*) printf '%s/dashboard/' "$base" ;;
+    *) printf '' ;;
+  esac
+}
+
 draw_facts() {
-  local host suite arch pretty
+  local host suite arch pretty dash
   host="$(hostname -s 2>/dev/null || hostname)"
   suite="$(host_suite)"
   arch="$(host_arch)"
   pretty="$(host_pretty)"
+  dash="$(apt_dashboard_url)"
   frame_row "$(pad_inner "")"
   frame_row "$(pad_inner "  ${C_DIM}HOST${C_RESET}  ${host}    ${C_DIM}ARCH${C_RESET}  ${arch}")"
   frame_row "$(pad_inner "  ${C_DIM}OS  ${C_RESET}  ${pretty}  ${C_DIM}SUITE${C_RESET} ${suite}")"
-  if [[ -n "$APT_BASE_URL" ]]; then
-    frame_row "$(pad_inner "  ${C_DIM}APT ${C_RESET}  ${APT_BASE_URL}")"
+  if [[ -n "$dash" ]]; then
+    frame_row "$(pad_inner "  ${C_DIM}APT ${C_RESET}  ${dash}")"
   else
     frame_row "$(pad_inner "  ${C_AMBER}APT ${C_RESET}  unset — pass --source-url")"
   fi
@@ -303,7 +312,7 @@ draw_confirm() {
   frame_row "$(pad_inner "")"
   frame_row "$(pad_inner "  ${C_DIM}ROLE   ${C_RESET}   ${C_BOLD}${PROFILE_LABELS[$idx]}${C_RESET}  ${PROFILE_DETAILS[$idx]}")"
   frame_row "$(pad_inner "  ${C_DIM}PACKAGE${C_RESET}   ${pkg}")"
-  frame_row "$(pad_inner "  ${C_DIM}SOURCE ${C_RESET}   ${APT_BASE_URL:-unset}")"
+  frame_row "$(pad_inner "  ${C_DIM}SOURCE ${C_RESET}   $(apt_dashboard_url)")"
   frame_row "$(pad_inner "")"
   frame_row "$(pad_inner "  ${C_AMBER}enter${C_RESET}  write APT source and install")"
   frame_row "$(pad_inner "  ${C_DIM}q${C_RESET}      abort")"
