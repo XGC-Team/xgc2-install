@@ -1,0 +1,4 @@
+*~
+*.swp
+.ci/
+.DS_Store

@@ -1,0 +1,30 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Role and keyring tests
+        run: |
+          set -euo pipefail
+          bash -n install.sh
+          test -f profiles/gcs.conf
+          test -f profiles/robot.conf
+          bash tests/test-roles.sh
+          bash tests/test-keyring.sh
