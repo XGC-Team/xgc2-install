@@ -197,7 +197,7 @@ hide_cursor() { is_tty && ui '\033[?25l'; }
 show_cursor() { is_tty && ui '\033[?25h'; }
 clear_screen() { is_tty && ui '\033[2J\033[H'; }
 save_cursor() { is_tty && ui '\033[s'; }
-redraw_from_cursor() { is_tty && ui '\033[u\033[J'; }
+restore_cursor() { is_tty && ui '\033[u'; }
 
 restore_terminal() {
   show_cursor
@@ -267,15 +267,14 @@ draw_facts() {
   fi
 }
 
-draw_menu() {
+draw_role_rows() {
   local selected="$1"
   local i marker label padded
-  frame_row "$(pad_inner "")"
-  frame_row "$(pad_inner "  ${C_AMBER}${C_BOLD}SELECT ROLE${C_RESET}")"
-  frame_row "$(pad_inner "")"
+  restore_cursor
   for i in "${!PROFILE_IDS[@]}"; do
     label="${PROFILE_LABELS[$i]}"
     printf -v padded '%-5s' "$label"
+    ui '\033[2K'
     if [[ "$i" == "$selected" ]]; then
       marker="${C_CYAN}▶${C_RESET}"
       frame_row "$(pad_inner "    ${marker} ${C_BOLD}${C_CYAN}${padded}${C_RESET}  ${PROFILE_DETAILS[$i]}")"
@@ -283,6 +282,15 @@ draw_menu() {
       frame_row "$(pad_inner "      ${C_DIM}${padded}${C_RESET}  ${C_DIM}${PROFILE_DETAILS[$i]}${C_RESET}")"
     fi
   done
+}
+
+draw_menu() {
+  local selected="$1"
+  frame_row "$(pad_inner "")"
+  frame_row "$(pad_inner "  ${C_AMBER}${C_BOLD}SELECT ROLE${C_RESET}")"
+  frame_row "$(pad_inner "")"
+  save_cursor
+  draw_role_rows "$selected"
   frame_row "$(pad_inner "")"
   frame_row "$(pad_inner "  ${C_DIM}↑↓  select     enter  confirm     q  abort${C_RESET}")"
   draw_frame_bot
@@ -553,7 +561,7 @@ select_action() {
   while true; do
     ACTION=install
     [[ "$idx" == 1 ]] && ACTION=uninstall
-    redraw_from_cursor
+    restore_cursor
     draw_action_menu "$idx"
     case "$(read_key)" in
       up) idx=0 ;;
@@ -584,16 +592,20 @@ select_role() {
   clear_screen
   draw_brand
   draw_facts
-  save_cursor
+  draw_menu "$idx"
   while true; do
-    redraw_from_cursor
-    draw_menu "$idx"
     case "$(read_key)" in
       up)
-        ((idx > 0)) && idx=$((idx - 1))
+        if ((idx > 0)); then
+          idx=$((idx - 1))
+          draw_role_rows "$idx"
+        fi
         ;;
       down)
-        ((idx < ${#PROFILE_IDS[@]} - 1)) && idx=$((idx + 1))
+        if ((idx < ${#PROFILE_IDS[@]} - 1)); then
+          idx=$((idx + 1))
+          draw_role_rows "$idx"
+        fi
         ;;
       enter)
         restore_terminal
