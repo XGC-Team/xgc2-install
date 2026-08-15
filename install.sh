@@ -184,7 +184,15 @@ setup_colors() {
   C_LINE=$'\033[38;5;24m'
 }
 
-ui() { is_tty || return 0; printf "$@" > /dev/tty; }
+ui() { is_tty || return 0; printf "$@"; }
+
+drain_tty() {
+  local _junk
+  while IFS= read -r -t 0 -n 1 _junk < /dev/tty 2>/dev/null; do
+    :
+  done
+  return 0
+}
 hide_cursor() { is_tty && ui '\033[?25l'; }
 show_cursor() { is_tty && ui '\033[?25h'; }
 clear_screen() { is_tty && ui '\033[2J\033[H'; }
@@ -540,7 +548,7 @@ select_action() {
       enter)
         restore_terminal
         trap - EXIT
-        echo "$idx"
+        ACTION_IDX="$idx"
         return 0
         ;;
       quit)
@@ -561,7 +569,6 @@ select_role() {
   trap restore_terminal EXIT
   hide_cursor
   while true; do
-    clear_screen
     draw_brand
     draw_facts
     draw_menu "$idx"
@@ -575,7 +582,7 @@ select_role() {
       enter)
         restore_terminal
         trap - EXIT
-        echo "$idx"
+        ROLE_IDX="$idx"
         return 0
         ;;
       quit)
@@ -691,18 +698,7 @@ if [[ -n "$PROFILE_ARG" ]]; then
 fi
 
 if [[ -z "$ACTION" ]]; then
-  if [[ "$ASSUME_YES" -eq 1 ]] || ! is_tty; then
-    ACTION=install
-  else
-    case "$(select_action)" in
-      0) ACTION=install ;;
-      1) ACTION=uninstall ;;
-      *)
-        printf '%saborted%s\n' "$C_DIM" "$C_RESET"
-        exit 1
-        ;;
-    esac
-  fi
+  ACTION=install
 fi
 
 SELECTED=""
@@ -714,26 +710,18 @@ elif [[ "$ASSUME_YES" -eq 1 ]] || ! is_tty; then
   echo "not a TTY: pass --role gcs|robot --yes, or --source-only" >&2
   exit 2
 else
-  SELECTED="$(select_role)" || {
+  drain_tty
+  printf 'XGC installer: ↑↓ select GCS or ROBOT, Enter installs, q aborts.\n'
+  ROLE_IDX=""
+  select_role || {
     printf '%saborted%s\n' "$C_DIM" "$C_RESET"
     exit 1
   }
+  SELECTED="$ROLE_IDX"
 fi
 
 if [[ "$ACTION" != uninstall ]]; then
   require_apt_url
-fi
-
-if [[ "$ASSUME_YES" -ne 1 ]]; then
-  if is_tty; then
-    confirm_deploy "$SELECTED" || {
-      printf '%saborted%s\n' "$C_DIM" "$C_RESET"
-      exit 1
-    }
-  else
-    echo "refusing to ${ACTION} without --yes on a non-TTY" >&2
-    exit 2
-  fi
 fi
 
 if [[ "$ACTION" == uninstall ]]; then
