@@ -267,7 +267,6 @@ draw_menu() {
     if [[ "$i" == "$selected" ]]; then
       marker="${C_CYAN}▶${C_RESET}"
       frame_row "$(pad_inner "    ${marker} ${C_BOLD}${C_CYAN}${label}${C_RESET}    ${PROFILE_DETAILS[$i]}")"
-      frame_row "$(pad_inner "       ${C_DIM}${PROFILE_HINTS[$i]}${C_RESET}")"
     else
       frame_row "$(pad_inner "      ${C_DIM}${label}${C_RESET}    ${C_DIM}${PROFILE_DETAILS[$i]}${C_RESET}")"
     fi
