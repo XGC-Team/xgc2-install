@@ -570,7 +570,6 @@ select_role() {
   hide_cursor
   while true; do
     clear_screen
-    printf 'XGC installer: ↑↓ select GCS or ROBOT, Enter installs, q aborts.\n'
     draw_brand
     draw_facts
     draw_menu "$idx"
