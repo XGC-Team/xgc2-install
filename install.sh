@@ -26,7 +26,7 @@ Usage:
   $0 --source-only --yes
 
   (no args)          interactive HUD on a real terminal
-  --role NAME        gcs (core) or robot (agent)
+  --role NAME        gcs or robot
   --source-url URL   override APT base
   --uninstall        purge the role package
   --yes              non-interactive
@@ -91,10 +91,10 @@ load_profiles() {
     done
   fi
   if ((${#PROFILE_IDS[@]} == 0)); then
-    register_profile gcs "GCS" "Ground station · Core" \
-      "xgc2-core only" xgc2-core xgc2-core xgc2-core.service xgc2-core
-    register_profile robot "ROBOT" "Onboard · Agent" \
-      "xgc2-agent only" xgc2-agent xgc2-agent xgc2-agent.service xgc2-agent
+    register_profile gcs "GCS" "Ground station" \
+      "" xgc2-core xgc2-core xgc2-core.service xgc2-core
+    register_profile robot "ROBOT" "Onboard" \
+      "" xgc2-agent xgc2-agent xgc2-agent.service xgc2-agent
   fi
 }
 
@@ -234,9 +234,9 @@ draw_brand() {
   frame_row "$(pad_inner "  ${C_CYAN}${C_BOLD}XGC${C_RESET}  ${C_DIM}INSTALL${C_RESET}                              ${C_AMBER}${VERSION}${C_RESET}")"
   frame_row "$(pad_inner "  ${C_LINE}$(printf '─%.0s' $(seq 1 58))${C_RESET}")"
   if [[ "${ACTION:-install}" == uninstall ]]; then
-    frame_row "$(pad_inner "  ${C_RED}${C_BOLD}PURGE${C_RESET}  ${C_DIM}remove core or agent${C_RESET}")"
+    frame_row "$(pad_inner "  ${C_RED}${C_BOLD}PURGE${C_RESET}  ${C_DIM}remove this role${C_RESET}")"
   else
-    frame_row "$(pad_inner "  ${C_AMBER}${C_BOLD}DEPLOY${C_RESET}  ${C_DIM}install core or agent${C_RESET}")"
+    frame_row "$(pad_inner "  ${C_AMBER}${C_BOLD}DEPLOY${C_RESET}  ${C_DIM}install this role${C_RESET}")"
   fi
 }
 
@@ -429,7 +429,7 @@ install_profile() {
   fi
   install_if_present "$pkg"
   printf '\n  %snext%s  review /etc/xgc2 and enable the service\n' "$C_DIM" "$C_RESET"
-  printf '  %s     %s  extras stay in APT; install them from Core/Agent\n\n' "$C_DIM" "$C_RESET"
+  printf '  %s     %s  extras stay in APT\n\n' "$C_DIM" "$C_RESET"
 }
 
 installed_packages_matching() {
@@ -701,7 +701,7 @@ fi
 if [[ -n "$PROFILE_ARG" ]]; then
   profile_index "$PROFILE_ARG" >/dev/null || {
     echo "unknown role: ${PROFILE_ARG}" >&2
-    echo "known roles: gcs robot (aliases: core agent)" >&2
+    echo "known roles: gcs robot" >&2
     exit 2
   }
   PROFILE_ARG="$(normalize_role "$PROFILE_ARG")"
