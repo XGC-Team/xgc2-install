@@ -569,6 +569,8 @@ select_role() {
   trap restore_terminal EXIT
   hide_cursor
   while true; do
+    clear_screen
+    printf 'XGC installer: ↑↓ select GCS or ROBOT, Enter installs, q aborts.\n'
     draw_brand
     draw_facts
     draw_menu "$idx"
@@ -711,7 +713,6 @@ elif [[ "$ASSUME_YES" -eq 1 ]] || ! is_tty; then
   exit 2
 else
   drain_tty
-  printf 'XGC installer: ↑↓ select GCS or ROBOT, Enter installs, q aborts.\n'
   ROLE_IDX=""
   select_role || {
     printf '%saborted%s\n' "$C_DIM" "$C_RESET"
