@@ -6,11 +6,15 @@ VERSION="0.2.0"
 APT_BASE_URL="${XGC2_APT_BASE_URL:-__XGC2_APT_BASE_URL__}"
 KEYRING_NAME="xgc2-archive-keyring.gpg"
 EXPECTED_FPR="${XGC2_APT_KEY_FINGERPRINT:-__XGC2_APT_KEY_FINGERPRINT__}"
-if [[ -n "${BASH_SOURCE[0]:-}" && "${BASH_SOURCE[0]}" != bash && "${BASH_SOURCE[0]}" != - ]]; then
-  SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-else
-  SCRIPT_DIR=""
-fi
+# curl | bash sets $0 to "bash" and leaves BASH_SOURCE unset (fatal with set -u).
+case "${0##*/}" in
+  bash|sh|dash|-bash|-sh|-)
+    SCRIPT_DIR=""
+    ;;
+  *)
+    SCRIPT_DIR="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
+    ;;
+esac
 PROFILE_DIR="${SCRIPT_DIR:+${SCRIPT_DIR}/profiles}"
 
 usage() {
